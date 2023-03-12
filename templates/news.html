@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-
-{% block content %}
-    {% for item in news['news'] %}
-        <h2>{{item["title"]}}</h2>
-        <div>{{item["content"]}}</div>
-    {% endfor %}
-{% endblock %}

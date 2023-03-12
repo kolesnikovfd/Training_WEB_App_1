@@ -1,6 +1,6 @@
 import json
-#from loginform import LoginForm
-from flask import Flask, render_template, url_for, redirect
+from loginform import LoginForm
+from flask import Flask, render_template, redirect
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -37,6 +37,14 @@ def auto_answer():
         'ready': 'True',
     }
     return render_template('auto_answer.html', **param)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        return redirect('/Доступ разрешён')
+    return render_template('login.html', title='Аварийный доступ', form=form)
 
 
 if __name__ == '__main__':
