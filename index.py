@@ -21,5 +21,23 @@ def list_prof(list):
     return render_template('list_prof.html', list=list)
 
 
+@app.route('/answer')
+@app.route('/auto_answer')
+def auto_answer():
+    # Откуда мы должны брать значения??
+    # Подставил из примера в задании
+    param = {
+        'title': 'Анкета',
+        'surname': 'Watny',
+        'name': 'Mark',
+        'education': 'высше среднего',
+        'profession': 'штурман марсохода',
+        'sex': 'male',
+        'motivation': 'Всегда мечтал зависнуть на Марсе!',
+        'ready': 'True',
+    }
+    return render_template('auto_answer.html', **param)
+
+
 if __name__ == '__main__':
     app.run(port='8080', host='127.0.0.1')
