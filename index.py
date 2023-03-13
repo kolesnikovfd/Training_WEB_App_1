@@ -1,9 +1,13 @@
 import json
 from loginform import LoginForm
 from flask import Flask, render_template, redirect
+from data import db_session, __all_models
+from data.users import User
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+
 
 @app.route('/<title>')
 @app.route('/index/<title>')
@@ -58,5 +62,30 @@ def table(sex, age):
     return render_template('table.html', title='Оформление каюты', sex=sex, age=age)
 
 
+def main():
+    db_session.global_init("db/mars_explorer.db")
+    db_sess = db_session.create_session()
+    surnames = ["Scott", "Smith", "Johnson", "Williams"]
+    names = ["Ridley", "James", "Mary", "David"]
+    ages = [21, 16, 20, 30]
+    positions = ["captain", "sailor", "bosun", "chief mate"]
+    specialities = ["research engineer", "navigator/pilot", "life-support engineer", "doctor"]
+    emails = ["scott_chief@mars.org", "smith@mars.org", "johnson@mars.org", "williams@mars.org"]
+    passwords = ["cap", "sailor228", "mary_j", "da_will"]
+    for i in range(4):
+        user = User()
+        user.surname = surnames[i]
+        user.name = names[i]
+        user.age = ages[i]
+        user.position = positions[i]
+        user.speciality = specialities[i]
+        user.address = f"module_{i + 1}"
+        user.email = emails[i]
+        user.hashed_password = passwords[i]
+        db_sess.add(user)
+    db_sess.commit()
+
+
 if __name__ == '__main__':
-    app.run(port='8080', host='127.0.0.1')
+    # app.run(port='8080', host='127.0.0.1')
+    main()
