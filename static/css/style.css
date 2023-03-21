@@ -4,8 +4,14 @@ h4 {
 }
 
 th {
-    margin-left: auto;
-    margin-right: auto;
+    padding-left: 10px;
+    padding-right: 10px;
     text-align: center;
     background-color: #7e7e7e;
+}
+
+td {
+    padding-left: 10px;
+    padding-right: 10px;
+    text-align: center;
 }

@@ -1,9 +1,10 @@
 import json
+import datetime
 from loginform import LoginForm
 from flask import Flask, render_template, redirect
 from data import db_session, __all_models
 from data.users import User
-
+from data.jobs import Jobs
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -62,30 +63,60 @@ def table(sex, age):
     return render_template('table.html', title='Оформление каюты', sex=sex, age=age)
 
 
-def main():
+@app.route('/works_log')
+def works_log():
     db_session.global_init("db/mars_explorer.db")
     db_sess = db_session.create_session()
-    surnames = ["Scott", "Smith", "Johnson", "Williams"]
-    names = ["Ridley", "James", "Mary", "David"]
-    ages = [21, 16, 20, 30]
-    positions = ["captain", "sailor", "bosun", "chief mate"]
-    specialities = ["research engineer", "navigator/pilot", "life-support engineer", "doctor"]
-    emails = ["scott_chief@mars.org", "smith@mars.org", "johnson@mars.org", "williams@mars.org"]
-    passwords = ["cap", "sailor228", "mary_j", "da_will"]
-    for i in range(4):
-        user = User()
-        user.surname = surnames[i]
-        user.name = names[i]
-        user.age = ages[i]
-        user.position = positions[i]
-        user.speciality = specialities[i]
-        user.address = f"module_{i + 1}"
-        user.email = emails[i]
-        user.hashed_password = passwords[i]
-        db_sess.add(user)
+    print(1)
+    jobs = db_sess.query(Jobs).all()
+    print(*jobs)
+    for job in jobs:
+        print(job.team_leader)
+        tl = db_sess.query(User).filter(User.id == job.team_leader).first()
+        job.team_leader = f'{tl.surname} {tl.name}'
+        print(4)
+    """
+    params = {'title': 'Список работ',
+              'jobs': []
+              }
+        team_leader = 
+        params['jobs'].append({
+            'id': job.id,
+            'job': job.job,
+            'team_leader': f'{team_leader.surname} {team_leader.name}',
+            'duration': {job.end_date - job.start_date} if job.is_finished else {datetime.datetime.now() - job.start_date},
+            'collaborators': job.collaborators,
+            'is_finised': job.is_finished
+        })
+    """
+    return render_template('works_log.html', jobs=jobs)
+
+
+def search():
+    db_sess = db_session.create_session()
+    users = db_sess.query(User).filter(User.age < 21, User.address == "module_1")
+    for user in users:
+        user.address = "module_3"
     db_sess.commit()
+
+    """
+    # Задание 4. Первая работа
+    job = Jobs()
+    job.team_leader = 2
+    job.job = 'deployment of residential module 3'
+    job.work_size = 11
+    job.collaborators = '4'
+    job.start_date = datetime.datetime.now()
+    job.is_finished = True
+    db_sess.add(job)
+    db_sess.commit()
+    """
+
+
+def main():
+    db_session.global_init("db/mars_explorer.db")
+    app.run(port='8080', host='127.0.0.1')
 
 
 if __name__ == '__main__':
-    # app.run(port='8080', host='127.0.0.1')
     main()
