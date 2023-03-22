@@ -1,12 +1,14 @@
 import json
 import datetime
 
+from flask import Flask, render_template, redirect
 from forms.user import RegisterForm
 from loginform import LoginForm
-from flask import Flask, render_template, redirect
 from data import db_session, __all_models
+
 from data.users import User
 from data.jobs import Jobs
+from data.departments import Department
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -107,11 +109,17 @@ def register():
 
 def search():
     db_sess = db_session.create_session()
-    users = db_sess.query(User).filter(User.age < 21, User.address == "module_1")
+    membs = db_sess.query(Department).filter(Department.id == 1).first().members
+    users = db_sess.query(User).filter(User.id.in_(map(int, membs.split(', '))))
     for user in users:
-        user.address = "module_3"
-    db_sess.commit()
 
+        work_time = 25
+        for job in user.jobs:
+            if job.is_finished:
+                work_time -= job.work_size
+                if work_time < 0:
+                    print(f'{user.name} {user.surname}')
+                    break
     """
     # Задание 4. Первая работа
     job = Jobs()
