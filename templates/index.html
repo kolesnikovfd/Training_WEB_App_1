@@ -1,5 +1,39 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+    <h2> Works log </h2>
+    {% if current_user.is_authenticated %}
+        <p>
+            <a href="create_job" class="btn btn-secondary">Добавить работу</a>
+        </p>
+    {% endif %}
+    {% for job in jobs %}
+        <h3> Action #{{job.id}} </h3>
+        <table>
+            <tr>
+                <th> Title of activity </th>
+                <th> Team leader </th>
+                <th> Duration </th>
+                <th> List of collaborators </th>
+                <th> Is finished </th>
+            </tr>
+            <tr style="background-color: #d5ccff">
+                <td> {{job.job}} </td>
+                <td> {{job.user.surname}} {{job.user.name}} </td>
+                <td> {{job.work_size}} hours </td>
+                <td> {{job.collaborators}} </td>
+                {% if job.is_finished %}
+                    <td style="background-color: #c9ffcb"> Is finished </td>
+                {% else %}
+                    <td style="background-color: #ff9d9d"> Is not finished </td>
+                {% endif %}
+            </tr>
+        </table>
+        {% if current_user.id == 1 or current_user == job.user %}
+            <p>
+                <a href="/job/{{job.id}}" class="btn btn-warning">Редактировать работу</a>
+                <a href="/delete_job/{{job.id}}" class="btn btn-danger">Удалить работу</a>
+            </p>
+        {% endif %}
+    {% endfor %}
 {% endblock %}

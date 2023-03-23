@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect, request, make_response, session
+from flask import Flask, render_template, redirect, request, make_response, session, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
-from forms.job import CreateForm
+from forms.job import JobForm
 from forms.user import RegisterForm, LoginForm
 
 from data import db_session
@@ -16,24 +16,18 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-@app.route('/<title>')
-@app.route('/index/<title>')
-def index(title):
-    return render_template('index.html', title=title)
-
-
-@app.route('/training/<prof>')
+@app.route('/training/<prof>')  # мусор
 def training(prof):
     return render_template('training.html', prof=prof)
 
 
-@app.route('/list_prof/<list>')
+@app.route('/list_prof/<list>')  # мусор
 def list_prof(list):
     return render_template('list_prof.html', list=list)
 
 
 @app.route('/answer')
-@app.route('/auto_answer')
+@app.route('/auto_answer')  # мусор
 def auto_answer():
     # Откуда мы должны брать значения??
     # Подставил из примера в задании
@@ -50,55 +44,18 @@ def auto_answer():
     return render_template('auto_answer.html', **param)
 
 
-@app.route('/distribution')
+@app.route('/distribution')  # мусор
 def distribution():
     crew = ['Ридли Скотт', 'Harry Potter', 'Vasya Pupkin']  # Некий список членов команды
     return render_template('distribution.html', title='Размещение', crew=crew)
 
 
-@app.route('/table/<sex>/<int:age>')
+@app.route('/table/<sex>/<int:age>')  # мусор
 def table(sex, age):
     return render_template('table.html', title='Оформление каюты', sex=sex, age=age)
 
 
-@app.route('/')
-@app.route('/index')
-def works_log():
-    db_sess = db_session.create_session()
-    jobs = db_sess.query(Jobs).all()
-    return render_template('works_log.html', jobs=jobs)
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Пароли не совпадают")
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Такой пользователь уже есть")
-        user = User(
-            email=form.email.data,
-            surname=form.surname.data,
-            name=form.name.data,
-            age=form.age.data,
-            position=form.position.data,
-            speciality=form.speciality.data,
-            address=form.address.data,
-        )
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
-        return redirect('/login')
-    return render_template('register.html', title='Регистрация', form=form)
-
-
-@app.route("/cookie_test")
+@app.route("/cookie_test")  # мусор
 def cookie_test():
     visits_count = int(request.cookies.get("visits_count", 0))
     if visits_count:
@@ -114,7 +71,7 @@ def cookie_test():
     return res
 
 
-@app.route("/session_test")
+@app.route("/session_test")  # мусор
 def session_test():
     visits_count = session.get('visits_count', 0)
     session['visits_count'] = visits_count + 1
@@ -122,10 +79,47 @@ def session_test():
         f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
+@app.route('/')
+@app.route('/index')
+def index():
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).all()
+    return render_template('index.html', jobs=jobs, title='Works log')
+
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        db_sess = db_session.create_session()
+        if db_sess.query(User).filter(User.email == form.email.data).first():
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Такой пользователь уже есть")
+        user = User()
+        user.email = form.email.data,
+        user.surname = form.surname.data,
+        user.name = form.name.data,
+        user.age = form.age.data,
+        user.position = form.position.data,
+        user.speciality = form.speciality.data,
+        user.address = form.address.data,
+
+        user.set_password(form.password.data)
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect('/login')
+    return render_template('register.html', title='Регистрация', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -138,6 +132,7 @@ def login():
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
         return render_template('login.html',
+                               title='Авторизация',
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
@@ -150,10 +145,10 @@ def logout():
     return redirect("/")
 
 
-@app.route('/create_job', methods=['GET', 'POST'])
+@app.route('/job', methods=['GET', 'POST'])
 @login_required
 def create_job():
-    form = CreateForm()
+    form = JobForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         job = Jobs()
@@ -169,38 +164,64 @@ def create_job():
         db_sess.merge(team_leader)
         db_sess.commit()
         return redirect("/")
-    return render_template('create_job.html', title='Добавление Работы', form=form)
+    return render_template('create_job.html', title='Добавление работы', form=form)
 
 
-def search():
+@app.route('/job/<int:job_id>', methods=['GET', 'POST'])
+@login_required
+def edit_job(job_id):
+    form = JobForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        if current_user.id == 1:
+            job = db_sess.query(Jobs).get(job_id, 0)
+        else:
+            job = db_sess.query(Jobs).filter(Jobs.id == job_id, Jobs.user == current_user).first()
+        if job:
+            form.team_leader.data = job.team_leader
+            form.job.data = job.job
+            form.work_size.data = job.work_size
+            form.collaborators.data = job.collaborators
+            form.start_date.data = job.start_date
+            form.end_date.data = job.end_date
+            form.is_finished.data = job.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        if current_user.id == 1:
+            job = db_sess.query(Jobs).get(job_id, 0)
+        else:
+            job = db_sess.query(Jobs).filter(Jobs.id == job_id, Jobs.user == current_user).first()
+        if job:
+            job.team_leader = form.team_leader.data
+            job.job = form.job.data
+            job.work_size = form.work_size.data
+            job.collaborators = form.collaborators.data
+            job.start_date = form.start_date.data
+            job.end_date = form.end_date.data
+            job.is_finished = form.is_finished.data
+            db_sess.commit()
+            return redirect("/")
+        else:
+            abort(404)
+    return render_template('create_job.html', form=form, title='Редактирование работы')
+
+
+@app.route('/delete_job/<int:job_id>')
+@login_required
+def delete_job(job_id):
     db_sess = db_session.create_session()
-    user = db_sess.query(User).get(5)
-    for job in user.jobs:
-        print(job)
-    """
-    membs = db_sess.query(Department).filter(Department.id == 1).first().members
-    users = db_sess.query(User).filter(User.id.in_(map(int, membs.split(', '))))
-    for user in users:
-
-        work_time = 25
-        for job in user.jobs:
-            if job.is_finished:
-                work_time -= job.work_size
-                if work_time < 0:
-                    print(f'{user.name} {user.surname}')
-                    break
-    
-    # Задание 4. Первая работа
-    job = Jobs()
-    job.team_leader = 2
-    job.job = 'deployment of residential module 3'
-    job.work_size = 11
-    job.collaborators = '4'
-    job.start_date = datetime.datetime.now()
-    job.is_finished = True
-    db_sess.add(job)
-    db_sess.commit()
-    """
+    if current_user.id == 1:
+        job = db_sess.query(Jobs).get(job_id, 0)
+    else:
+        job = db_sess.query(Jobs).filter(Jobs.id == job_id, Jobs.user == current_user).first()
+    if job:
+        db_sess.delete(job)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
 
 
 def main():

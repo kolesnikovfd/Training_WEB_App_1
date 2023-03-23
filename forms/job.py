@@ -3,7 +3,7 @@ from wtforms import StringField, SubmitField, IntegerField, BooleanField, TextAr
 from wtforms.validators import DataRequired
 
 
-class CreateForm(FlaskForm):
+class JobForm(FlaskForm):
     team_leader = IntegerField('Руководитель', validators=[DataRequired()])
     job = TextAreaField('Описание работы', validators=[DataRequired()])
     work_size = IntegerField('Объем работы в часах', validators=[DataRequired()])
