@@ -14,8 +14,8 @@ class Jobs(SqlAlchemyBase):
     job = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     work_size = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     collaborators = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    start_date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
-    end_date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
+    start_date = sqlalchemy.Column(sqlalchemy.Date, nullable=True)
+    end_date = sqlalchemy.Column(sqlalchemy.Date, nullable=False)
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
     user = orm.relationship('User')

@@ -10,4 +10,4 @@ class Department(SqlAlchemyBase):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     chief = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     email = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=True)
-    members = orm.relationship("User", back_populates='user')
+    members = orm.relationship("User", back_populates='department')
