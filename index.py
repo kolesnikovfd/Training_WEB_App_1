@@ -164,8 +164,9 @@ def create_job():
         job.start_date = form.start_date.data
         job.end_date = form.end_date.data
         job.is_finished = form.is_finished.data
-        current_user.jobs.append(job)
-        db_sess.merge(current_user)
+        team_leader = load_user(job.team_leader)
+        team_leader.jobs.append(job)
+        db_sess.merge(team_leader)
         db_sess.commit()
         return redirect("/")
     return render_template('create_job.html', title='Добавление Работы', form=form)
@@ -173,7 +174,7 @@ def create_job():
 
 def search():
     db_sess = db_session.create_session()
-    user = db_sess.query(User).get(1)
+    user = db_sess.query(User).get(5)
     for job in user.jobs:
         print(job)
     """

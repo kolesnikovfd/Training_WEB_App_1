@@ -3,6 +3,10 @@ h4 {
     color: #7e7e7e;
 }
 
+h2 {
+    text-align: center;
+}
+
 th {
     padding-left: 10px;
     padding-right: 10px;
